@@ -1,3 +1,4 @@
+import { BunPlugin } from "bun";
 import { mkdir, rmdirSync } from "fs";
 import { readdir } from "fs/promises";
 import path from "path";
@@ -81,11 +82,6 @@ const markUseClient = async (dir: string) => {
         await Bun.write(fullPath, file);
         continue;
       }
-
-      // if (file.includes("$$default as default")) {
-      //   file = file.replace("export {", "var def = $$$default();\nexport {");
-      //   file = file.replace("$$default as default", "def as default");
-      // }
 
       if (file.includes("useClient")) {
         file = `'use client'\n` + file;
