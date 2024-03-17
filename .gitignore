@@ -34,3 +34,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/output/
+.spago
+.psc-ide-port
+.purs-repl
+app
