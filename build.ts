@@ -23,6 +23,12 @@ for (let name of routeFiles) {
 
   const outdir = `${tempFolderPath}/` + split.join("/").toLowerCase();
 
+  const foreign = Bun.file(`./output/${name}/foreign.js`);
+
+  if (await foreign.exists()) {
+    await Bun.write(`${outdir}/foreign.js`, foreign);
+  }
+
   await Bun.write(`${outdir}/${filename}.js`, file);
 }
 
@@ -65,6 +71,10 @@ const markUseClient = async (dir: string) => {
     if (path.extname(f) === ".js") {
       const fullPath = path.join(dir, f);
       let file = await Bun.file(fullPath).text();
+
+      if (fullPath.includes("app/layout.js")) {
+        file = `import '@/globals.css';\n` + file;
+      }
 
       if (f.includes("chunk")) {
         file = file.replace("~/chunk-", "~/chunks/chunk-");
