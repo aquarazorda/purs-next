@@ -1,39 +1,58 @@
-import { BunPlugin } from "bun";
 import { mkdir, rmdirSync } from "fs";
 import { readdir } from "fs/promises";
 import path from "path";
 
-const tempFolderPath = "./temp";
-mkdir(tempFolderPath, { recursive: true }, (err) => {});
+const tempFolderPath = "temp";
+mkdir("./" + tempFolderPath, { recursive: true }, (err) => {});
 rmdirSync("./app", { recursive: true });
 mkdir("./app", { recursive: true }, (err) => {});
 
-const files = await readdir("./output");
-const routeFiles = files.filter((file) => file.startsWith("Routes"));
+const entrypoints: string[] = [];
 
-for (let name of routeFiles) {
-  const split = name.split(".");
-  let file = await Bun.file(`./output/${name}/index.js`).text();
-  file = file.replaceAll("../", import.meta.dir + "/output/");
-  file;
+type File = {
+  path: string;
+  isClient: boolean;
+  isPage: boolean;
+};
 
-  const filename = split[split.length - 1].toLowerCase();
+const entryFiles: File[] = [];
 
-  split.pop();
-  split.shift();
+const readFolderAndCheck = async (dir: string) => {
+  dir = "./" + dir;
+  const files = await readdir(dir);
 
-  const outdir = `${tempFolderPath}/` + split.join("/").toLowerCase();
+  for (let file of files) {
+    if (path.extname(file) === ".purs") {
+      const fullPath = path.join(dir, file);
+      const text = await Bun.file(fullPath).text();
+      const isClient = text.includes("useClient");
+      const isPage =
+        fullPath.endsWith("Page.purs") || fullPath.endsWith("Layout.purs");
 
-  const foreign = Bun.file(`./output/${name}/foreign.js`);
+      const entry = {
+        path: fullPath.replace("src/", "").replace(".purs", ""),
+        isClient,
+        isPage,
+      };
 
-  if (await foreign.exists()) {
-    await Bun.write(`${outdir}/foreign.js`, foreign);
+      if (entry.isClient || entry.isPage) {
+        entryFiles.push(entry);
+      }
+    } else {
+      await readFolderAndCheck(path.join(dir, file));
+    }
+  }
+};
+
+const generateTempPath = (chunks: string[]) => {
+  let cs = chunks.slice(0, -1);
+
+  if (chunks[0] === "app") {
+    cs = cs.slice(1);
   }
 
-  await Bun.write(`${outdir}/${filename}.js`, file);
-}
-
-const entrypoints: string[] = [];
+  return `${tempFolderPath}/${cs.length ? cs.join("/") : ""}`;
+};
 
 const readAndCheckJs = async (dir: string) => {
   const files = await readdir(dir);
@@ -50,21 +69,6 @@ const readAndCheckJs = async (dir: string) => {
   }
 };
 
-await readAndCheckJs(tempFolderPath);
-
-const res = await Bun.build({
-  entrypoints,
-  outdir: "./app/",
-  splitting: true,
-  naming: {
-    asset: "[dir]/[name].[ext]",
-    chunk: "chunks/[name]-[hash].[ext]",
-  },
-  publicPath: "~/",
-  target: "node",
-  external: ["react", "react-dom"],
-});
-
 const markUseClient = async (dir: string) => {
   const files = await readdir(dir);
 
@@ -77,11 +81,11 @@ const markUseClient = async (dir: string) => {
         file = `import '@/globals.css';\n` + file;
       }
 
-      if (f.includes("chunk")) {
-        file = file.replace("~/chunk-", "~/chunks/chunk-");
-        await Bun.write(fullPath, file);
-        continue;
-      }
+      // if (f.includes("chunk")) {
+      //   file = file.replace("~/chunk-", "~/chunks/chunk-");
+      //   await Bun.write(fullPath, file);
+      //   continue;
+      // }
 
       if (file.includes("useClient")) {
         file = `'use client'\n` + file;
@@ -95,8 +99,52 @@ const markUseClient = async (dir: string) => {
   }
 };
 
-await markUseClient("./app");
+const main = async () => {
+  await readFolderAndCheck("src");
 
-rmdirSync(tempFolderPath, { recursive: true });
+  for (let { path, isClient, isPage } of entryFiles) {
+    let file = await Bun.file(
+      `./output/${path.replaceAll("/", ".")}/index.js`,
+    ).text();
 
-console.log(res);
+    file = file.replaceAll("../", import.meta.dir + "/output/");
+
+    const outdirChunks = path.toLowerCase().split("/");
+    const outdir = "./" + generateTempPath(outdirChunks);
+
+    const clientFiles = entryFiles.filter((f) => f.isClient);
+
+    clientFiles.forEach(({ path }) => {
+      const chunks = path.toLowerCase().split("/");
+
+      file = file.replaceAll(
+        `output/${path.replaceAll("/", ".")}/index.js`,
+        generateTempPath(chunks) + `/${chunks[chunks.length - 1]}.js`,
+      );
+    });
+
+    await Bun.write(
+      `${outdir}/${outdirChunks[outdirChunks.length - 1]}.js`,
+      file,
+    );
+  }
+
+  await readAndCheckJs(tempFolderPath);
+
+  const res = await Bun.build({
+    entrypoints,
+    outdir: "./app",
+    splitting: true,
+    naming: {
+      asset: "[dir]/[name].[ext]",
+      chunk: "chunks/[name]-[hash].[ext]",
+    },
+    external: ["react", "react-dom"],
+  });
+
+  await markUseClient("./app");
+  // rmdirSync(tempFolderPath, { recursive: true });
+  console.log(res);
+};
+
+main();

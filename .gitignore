@@ -39,4 +39,5 @@ next-env.d.ts
 .spago
 .psc-ide-port
 .purs-repl
-app
+/app
+temp

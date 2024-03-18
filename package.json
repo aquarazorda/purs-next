@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "build-vite": "vite build"
+    "rollup": "rollup -c rollup.config.js --bundleConfigAsCjs"
   },
   "dependencies": {
     "next": "14.1.3",
@@ -15,6 +15,9 @@
     "react-dom": "^18"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@types/bun": "latest",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
@@ -23,9 +26,10 @@
     "eslint-config-next": "14.1.3",
     "postcss": "^8",
     "rollup": "^4.13.0",
+    "rollup-plugin-preserve-directives": "^0.4.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-preserve-directives": "^1.1.1",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5",
-    "@types/bun": "latest"
+    "typescript": "^5"
   }
 }
-

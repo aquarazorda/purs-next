@@ -1,4 +1,4 @@
-module Routes.About.Page where
+module App.About.Page where
 
 import Prelude
 
@@ -6,6 +6,9 @@ import React.Basic.DOM as R
 import React.Basic.Events (handler_)
 import React.Basic.Hooks (Component, component, useState, (/\))
 import React.Basic.Hooks as React
+
+useClient :: Boolean
+useClient = true
 
 default :: Component Int
 default = component "MainPage" \_ -> React.do

@@ -1,4 +1,4 @@
-module Routes.Page (default) where
+module App.Page (default) where
 
 import Fetch
 import Prelude

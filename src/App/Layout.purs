@@ -1,4 +1,4 @@
-module Routes.Layout where
+module App.Layout where
 
 import React.Basic (JSX)
 import React.Basic.DOM (div, body, h1, header, html, text)
