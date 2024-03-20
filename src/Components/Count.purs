@@ -1,28 +1,32 @@
+-- use client
 module Components.Count where
 
-import Data.Tuple.Nested
-import Prelude
-
+import Data.Tuple (Tuple(..))
+import Prelude (($), pure, show, (+))
 import React.Basic.DOM as R
-import React.Basic.Events (handler_)
-import React.Basic.Hooks as React
+import React.Hooks (useState)
+import React.Component (ReactComponent, createComponentImpl, text, div)
 
-useClient :: Boolean
-useClient = true
+-- mkCounter :: Component Int
+-- mkCounter = do
+--   component "Count" $ \initialCount -> Hooks.do
+--     count /\ setCount <- useState initialCount
+--
+--     pure $ R.div
+--       { className: "place-self-start self-start font-medium text-orange-500"
+--       , children:
+--           [ R.text $ show count
+--           , R.button
+--               { onClick: handler_ do
+--                   setCount (_ + 1)
+--               , children: [ R.text "+" ]
+--               }
+--           ]
+--       }
 
-mkCounter :: React.Component Int
-mkCounter = do
-  React.component "Count" $ \initialCount -> React.do
-    count /\ setCount <- React.useState initialCount
-
-    pure $ R.div
-      { className: "place-self-start self-start font-medium text-orange-500"
-      , children:
-          [ R.text $ show count
-          , R.button
-              { onClick: handler_ do
-                  setCount (_ + 1)
-              , children: [ R.text "+" ]
-              }
-          ]
-      }
+counter :: ReactComponent { count :: Int }
+counter = createComponentImpl $ \props -> 
+  let Tuple count setCount = useState props.count 
+  in
+  div { children: [text (show count)] }
+  
