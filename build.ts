@@ -109,10 +109,10 @@ const markUseClient = async (dir: string) => {
 const modifyMainFiles = async () => {
   for (let { path } of entryFiles) {
     let file = await Bun.file(
-      `./output/${path.replaceAll("/", ".")}/index.js`,
+      `./output-es/${path.replaceAll("/", ".")}/index.js`,
     ).text();
 
-    file = file.replaceAll("../", import.meta.dir + "/output/");
+    file = file.replaceAll("../", import.meta.dir + "/output-es/");
 
     for (let path of Array.from(clientEntryFiles.keys())) {
       file = await clientImportReplacer(file, path);
@@ -131,15 +131,15 @@ const modifyMainFiles = async () => {
 const modifyClientFiles = async () => {
   Array.from(clientEntryFiles.keys()).forEach(async (path) => {
     let file = await Bun.file(
-      `./output/${path.replaceAll("/", ".")}/index.js`,
+      `./output-es/${path.replaceAll("/", ".")}/index.js`,
     ).text();
     file = `'use client';\n` + file;
-    file = file.replaceAll("../", import.meta.dir + "/output/");
+    file = file.replaceAll("../", import.meta.dir + "/output-es/");
 
     const chunks = path.toLowerCase().split("/");
 
     file = file.replaceAll(
-      `output/${path.replaceAll("/", ".")}/index.js`,
+      `output-es/${path.replaceAll("/", ".")}/index.js`,
       generateTempPath(chunks) + `/${chunks[chunks.length - 1]}.js`,
     );
 

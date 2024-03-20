@@ -3,7 +3,6 @@ module React.Component where
 import Prelude hiding (div)
 
 import Control.Promise (Promise)
-import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -30,6 +29,7 @@ a = createElementImpl "a"
 
 span :: forall props. ReactComponent props
 span = createElementImpl "span"
--- exampleComponent :: ReactComponent {}
--- exampleComponent = createComponentImpl $ \_ -> div { children: [counter { count: 0 }] }
---
+
+button :: forall props. ReactComponent props
+button = createElementImpl "button"
+
