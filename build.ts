@@ -67,7 +67,7 @@ const readAndCheckJs = async (dir: string) => {
   const files = await readdir(dir);
 
   for (let file of files) {
-    if (path.extname(file) === ".js") {
+    if (path.extname(file) === ".jsx") {
       const fullPath = path.join(dir, file);
       entrypoints.push(fullPath);
     }
@@ -82,11 +82,11 @@ const markUseClient = async (dir: string) => {
   const files = await readdir(dir);
 
   for (let f of files) {
-    if (path.extname(f) === ".js") {
+    if (path.extname(f) === ".jsx") {
       const fullPath = path.join(dir, f);
       let file = await Bun.file(fullPath).text();
 
-      if (fullPath.includes("app/layout.js")) {
+      if (fullPath.includes("temp/layout.jsx")) {
         file = `import '@/globals.css';\n` + file;
       }
 
@@ -133,7 +133,7 @@ const modifyClientFiles = async () => {
     let file = await Bun.file(
       `./output/${path.replaceAll("/", ".")}/index.js`,
     ).text();
-    file = file.replace("// use client", "'use client'");
+    file = `'use client';\n` + file;
     file = file.replaceAll("../", import.meta.dir + "/output/");
 
     const chunks = path.toLowerCase().split("/");

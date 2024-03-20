@@ -49,7 +49,6 @@ export const clientImportReplacer = async (
         }/app/${matchString.toLowerCase()}.jsx"`,
       );
 
-      console.log(matchString, updatedMainString);
       return updatedMainString;
     }
   }
